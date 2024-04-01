@@ -1,6 +1,9 @@
-from django.contrib import admin
-from django.urls import path, include
+from rest_framework import routers
 
-urlpatterns = [
-    # path('', )
-]
+import apps.hotels.urls
+
+router = routers.DefaultRouter()
+
+router.registry.extend(apps.hotels.urls.router.registry)
+
+urlpatterns = router.urls

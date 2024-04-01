@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import User
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'password']
@@ -16,3 +16,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+

@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.forms import DateTimeInput
 from django_filters import DateTimeFilter, NumberFilter, FilterSet, ModelChoiceFilter
 
@@ -15,10 +17,12 @@ class RoomFilter(FilterSet):
 
     datetime_from = DateTimeFilter(field_name='available_bookings__datetime_from', lookup_expr='lte',
                                    input_formats=DATETIME_INPUT_FORMATS,
-                                   widget=DateTimeInput(attrs={'type': 'datetime-local'}))
+                                   widget=DateTimeInput(attrs={'type': 'datetime-local',
+                                                               'min': timezone.now().strftime('%Y-%m-%dT%H:%M')}))
     datetime_end = DateTimeFilter(field_name='available_bookings__datetime_end', lookup_expr='gte',
                                   input_formats=DATETIME_INPUT_FORMATS,
-                                  widget=DateTimeInput(attrs={'type': 'datetime-local'}))
+                                  widget=DateTimeInput(attrs={'type': 'datetime-local',
+                                                              'min': timezone.now().strftime('%Y-%m-%dT%H:%M')}))
 
     class Meta:
         model = Room

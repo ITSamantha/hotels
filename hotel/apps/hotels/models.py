@@ -82,8 +82,12 @@ class RoomBookingAvailable(BaseModel):
 class Booking(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name="bookings")
     guest_count = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], null=False)
-    booking_status = models.IntegerField(choices=BookingStatus.choices, auto_created=BookingStatus.IN_PROCESS)
+    booking_status = models.IntegerField(choices=BookingStatus.choices,
+                                         default=BookingStatus.IN_PROCESS, blank=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name="bookings")
+
+    datetime_from = models.DateTimeField()
+    datetime_end = models.DateTimeField()
 
     class Meta:
         verbose_name = 'Booking'

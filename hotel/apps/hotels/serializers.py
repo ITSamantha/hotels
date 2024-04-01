@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.hotels.models import Country, Address, Hotel, Room
+from apps.hotels.models import Country, Address, Hotel, Room, RoomBookingAvailable, Booking
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -27,7 +27,22 @@ class HotelSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
+class RoomBookingAvailableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomBookingAvailable
+        fields = ('__all__')
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ('__all__')
+
+
 class RoomSerializer(serializers.ModelSerializer):
+    available_bookings = RoomBookingAvailableSerializer(source='available_bookings.all', many=True, read_only=True)
+    bookings = BookingSerializer(source='bookings.all', many=True, read_only=True)
+
     class Meta:
         model = Room
         fields = ('__all__')

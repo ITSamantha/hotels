@@ -34,5 +34,5 @@ class RoomBookingAvailableAdmin(admin.ModelAdmin):
 
 
 @admin.register(Booking)
-class RoomBookingAvailableAdmin(admin.ModelAdmin):
+class BookingAdmin(admin.ModelAdmin):
     pass

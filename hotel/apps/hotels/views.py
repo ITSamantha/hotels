@@ -1,8 +1,11 @@
+from rest_framework.filters import OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
-from apps.hotels.models import Country, City, Address, Hotel, Room
+from apps.hotels.filters import RoomFilter
+from apps.hotels.models import Country, City, Address, Hotel, Room, RoomBookingAvailable
 from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSerializer, RoomSerializer, \
-    AddressSerializer
+    AddressSerializer, RoomBookingAvailableSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class CountryModelViewSet(ModelViewSet):
@@ -28,3 +31,6 @@ class HotelModelViewSet(ModelViewSet):
 class RoomModelViewSet(ModelViewSet):
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = RoomFilter
+    ordering_fields = ['price', 'max_guest_amount']

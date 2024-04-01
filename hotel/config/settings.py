@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'api.apps.ApiConfig',
+    "django_filters",
+    'apps.api.apps.ApiConfig',
     "apps.users.apps.UsersConfig",
     "apps.hotels.apps.HotelsConfig"
 ]

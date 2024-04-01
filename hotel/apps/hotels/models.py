@@ -80,7 +80,7 @@ class RoomBookingAvailable(BaseModel):
 
 
 class Booking(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name="bookings")
     guest_count = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], null=False)
     booking_status = models.IntegerField(choices=BookingStatus.choices, auto_created=BookingStatus.IN_PROCESS)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name="bookings")

@@ -1,7 +1,7 @@
 from rest_framework.filters import OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
-from apps.hotels.filters import RoomFilter
+from apps.hotels.filters import RoomFilter, HotelFilter
 from apps.hotels.models import Country, City, Address, Hotel, Room, RoomBookingAvailable
 from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSerializer, RoomSerializer, \
     AddressSerializer, RoomBookingAvailableSerializer
@@ -26,6 +26,9 @@ class AddressModelViewSet(ModelViewSet):
 class HotelModelViewSet(ModelViewSet):
     serializer_class = HotelSerializer
     queryset = Hotel.objects.all()
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = HotelFilter
+    ordering_fields = ['title', 'rating']
 
 
 class RoomModelViewSet(ModelViewSet):

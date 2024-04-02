@@ -1,33 +1,59 @@
 import datetime
 
+from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from apps.hotels.choices import BookingStatus
 from apps.hotels.filters import RoomFilter, HotelFilter
 from apps.hotels.models import Country, City, Address, Hotel, Room, RoomBookingAvailable, Booking
 from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSerializer, RoomSerializer, \
-    AddressSerializer, RoomBookingAvailableSerializer, BookingSerializer
+    AddressSerializer, BookingSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
+from core.mixins import PermissionPolicyMixin
+from core.permissions import IsAdmin, IsAuthenticated
 from core.utils.auth import Auth
 
 
-class CountryModelViewSet(ModelViewSet):
+class CountryModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = CountrySerializer
     queryset = Country.objects.all()
 
+    permission_classes_per_method = {
+        'create': [IsAdmin, ],
+        'update': [IsAdmin, ],
+        'partial_update': [IsAdmin, ],
+        'destroy': [IsAdmin, ]
+    }
 
-class CityModelViewSet(ModelViewSet):
+
+class CityModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = CitySerializer
     queryset = City.objects.all()
 
+    permission_classes_per_method = {
+        'create': [IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
+        'destroy': [IsAdmin]
+    }
 
-class AddressModelViewSet(ModelViewSet):
+
+class AddressModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = AddressSerializer
     queryset = Address.objects.all()
 
+    permission_classes_per_method = {
+        'create': [IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
+        'destroy': [IsAdmin]
+    }
 
-class HotelModelViewSet(ModelViewSet):
+
+class HotelModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = HotelSerializer
     queryset = Hotel.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -35,8 +61,15 @@ class HotelModelViewSet(ModelViewSet):
     ordering_fields = ['title', 'rating']
     search_fields = ['title', 'description']
 
+    permission_classes_per_method = {
+        'create': [IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
+        'destroy': [IsAdmin]
+    }
 
-class RoomModelViewSet(ModelViewSet):
+
+class RoomModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -44,22 +77,51 @@ class RoomModelViewSet(ModelViewSet):
     ordering_fields = ['price', 'max_guest_amount']
     search_fields = ['title', "number"]
 
+    permission_classes_per_method = {
+        'create': [IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
+        'destroy': [IsAdmin]
+    }
 
-class RoomBookingAvailableModelViewSet(ModelViewSet):
+
+class RoomBookingAvailableModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = RoomBookingAvailable
     queryset = RoomBookingAvailable.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_class = ["room"]
+    filterset_fields = ["room"]
     ordering_fields = ['room', 'datetime_from', "datetime_end", "min_booking_time", "max_booking_time"]
 
+    permission_classes_per_method = {
+        'create': [IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
+        'destroy': [IsAdmin]
+    }
 
-class BookingModelViewSet(ModelViewSet):
+
+class BookingModelViewSet(PermissionPolicyMixin, ModelViewSet):
     serializer_class = BookingSerializer
     queryset = Booking.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ["user__id", "room__id"]
     ordering_fields = ["guest_count"]
     search_fields = ["room__title", "room__number"]
+
+    permission_classes_per_method = {
+        'create': [IsAuthenticated],
+        'update': [IsAuthenticated | IsAdmin],
+        'partial_update': [IsAuthenticated | IsAdmin],
+        'destroy': [IsAuthenticated | IsAdmin]
+    }
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user_id != request.user.id or instance.booking_status == BookingStatus.DECLINED:
+            return Response({'error': 'You can not decline this booking.'}, status=status.HTTP_400_BAD_REQUEST)
+        instance.booking_status = BookingStatus.DECLINED
+        instance.save()
+        return Response({'message': 'Successfully declined.'}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         auth = Auth()

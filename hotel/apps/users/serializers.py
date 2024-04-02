@@ -21,7 +21,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ["password"]
+        fields = ["username", "email", "id", "first_name", "last_name", "date_joined", "sex", "birthday",
+                  "mobile_phone", "is_active", "bookings"
+                  ]
+
+    def get_fields(self):
+        fields = super().get_fields()
+
+        if not self.context['request'].user.is_staff:
+            del fields['bookings']
+
+        return fields
+
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "email", "id", "first_name", "last_name", "date_joined", "sex", "birthday",
+                  "mobile_phone", "is_active", "bookings"
+                  ]
 
 
 class UserLoginSerializer(serializers.ModelSerializer):

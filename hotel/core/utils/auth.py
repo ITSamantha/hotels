@@ -8,7 +8,8 @@ class Auth:
     def __init__(self):
         self.jwt_authentication = JWTAuthentication()
 
-    def check_access_token(self, request):
+    @staticmethod
+    def check_access_token(request):
 
         access = request.COOKIES.get('access')
         if not access:

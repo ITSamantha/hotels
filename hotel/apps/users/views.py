@@ -1,18 +1,15 @@
-from django.contrib.auth import authenticate
-from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
+from rest_framework import status, mixins, generics
+
 from rest_framework.generics import GenericAPIView
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from core.utils.auth import Auth
+from core.permissions import IsAuthenticated
 from .models import User
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
+from .serializers import UserRegistrationSerializer, UserSerializer, CurrentUserSerializer
 
 
 class LoginUserView(TokenObtainPairView):
@@ -36,7 +33,6 @@ class RefreshTokenView(TokenRefreshView):
 
 
 class RegisterUserView(GenericAPIView):
-    queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
 
     def post(self, request):
@@ -46,21 +42,32 @@ class RegisterUserView(GenericAPIView):
             if user:
                 refresh = RefreshToken.for_user(user)
                 return Response({
-
                     'refresh': str(refresh),
-
                     'access': str(refresh.access),
-
                 }, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutUserView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request: Request):
-        auth = Auth()
-        auth.check_access_token(request)
         response = Response({'message': 'Successfully logged out.'}, status=status.HTTP_200_OK)
         response.delete_cookie("access")
         response.delete_cookie("refresh")
         return response
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'pk'
+
+
+class CurrentUserDetailView(generics.GenericAPIView):
+    serializer_class = CurrentUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)

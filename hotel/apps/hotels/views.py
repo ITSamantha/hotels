@@ -90,7 +90,7 @@ class RoomBookingAvailableModelViewSet(PermissionPolicyMixin, ModelViewSet):
     queryset = RoomBookingAvailable.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["room"]
-    ordering_fields = ['room', 'datetime_from', "datetime_end", "min_booking_time", "max_booking_time"]
+    ordering_fields = ['room', 'date_from', "date_end", "min_booking_time", "max_booking_time"]
 
     permission_classes_per_method = {
         'create': [IsAdmin],

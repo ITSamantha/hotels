@@ -15,13 +15,13 @@ class RoomFilter(FilterSet):
     max_guest_amount__min = NumberFilter(field_name='max_guest_amount', lookup_expr='gte')
     max_guest_amount__max = NumberFilter(field_name='max_guest_amount', lookup_expr='lte')
 
-    datetime_from = DateFilter(field_name='available_bookings__datetime_from', lookup_expr='lte',
+    date_from = DateFilter(field_name='available_bookings__date_from', lookup_expr='lte',
                                input_formats=DATETIME_INPUT_FORMATS,
-                               widget=DateInput(attrs={'type': 'datetime-local',
+                               widget=DateInput(attrs={'type': 'date',
                                                        'min': timezone.now().strftime('%Y-%m-%d')}))
-    datetime_end = DateFilter(field_name='available_bookings__datetime_end', lookup_expr='gte',
+    date_end = DateFilter(field_name='available_bookings__date_end', lookup_expr='gte',
                               input_formats=DATETIME_INPUT_FORMATS,
-                              widget=DateInput(attrs={'type': 'datetime-local',
+                              widget=DateInput(attrs={'type': 'date',
                                                       'min': timezone.now().strftime('%Y-%m-%d')}))
 
     class Meta:

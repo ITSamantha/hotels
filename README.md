@@ -46,15 +46,15 @@
      ```
      
   3. Выполнить build в директории приложения с помощью следующей команды:
-     
+
      ```
-    docker compose build --no-cache
+     docker compose build --no-cache
      ```
      
   3. Для запуска приложения необходимо выполнить следующую команду:
      
      ```
-    docker compose up
+     docker compose build up
      ```
      
   Далее необходимо создать суперюзера.

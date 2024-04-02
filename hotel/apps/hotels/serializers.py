@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.hotels.choices import BookingStatus
-from apps.hotels.models import Country, Address, Hotel, Room, RoomBookingAvailable, Booking
+from apps.bookings.serializers import BookingSerializer, RoomBookingAvailableSerializer
+from apps.hotels.models import Country, Address, Hotel, Room
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -26,31 +26,6 @@ class HotelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hotel
         fields = ('__all__')
-
-
-class RoomBookingAvailableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoomBookingAvailable
-        fields = ('__all__')
-
-
-class BookingSerializer(serializers.ModelSerializer):
-    booking_status = serializers.ChoiceField(choices=BookingStatus.choices, read_only=True)
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    class Meta:
-        model = Booking
-        fields = ('__all__')
-
-
-class CreateBookingSerializer(serializers.ModelSerializer):
-    booking_status = serializers.ChoiceField(choices=BookingStatus.choices, read_only=True,
-                                             default=BookingStatus.IN_PROCESS)
-
-    class Meta:
-        model = Booking
-        fields = ("guest_count", "room", "user", "date_from", "date_end", "booking_status")
-        extra_kwargs = {'user': {'read_only': True}, }
 
 
 class RoomSerializer(serializers.ModelSerializer):

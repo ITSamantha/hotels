@@ -1,24 +1,21 @@
-from tokenize import TokenError
-
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.permissions import BasePermission
+from rest_framework_simplejwt.exceptions import TokenError
 
 from core.utils.auth import Auth
 
 
 class IsAuthenticated(BasePermission):
-    message = "Вы не авторизованы."
 
     def has_permission(self, request, view):
         try:
             Auth.check_access_token(request)
-        except Exception:
+        except (TokenError, AuthenticationFailed):
             raise AuthenticationFailed(detail="You are not authorized")
         return True
 
 
 class IsAdmin(BasePermission):
-    message = "Вы не являетесь администратором."
 
     def has_permission(self, request, view):
         try:
@@ -30,6 +27,6 @@ class IsAdmin(BasePermission):
 
         except PermissionDenied:
             raise PermissionDenied(detail="You are not an admin.")
-        except Exception:
+        except (TokenError, AuthenticationFailed):
             raise AuthenticationFailed(detail="You are not authorized")
         return True

@@ -1,9 +1,8 @@
-from django.urls import path
 from rest_framework import routers
-from rest_framework.authtoken import views
 
+from apps.bookings.views import RoomBookingAvailableModelViewSet, BookingModelViewSet
 from apps.hotels.views import CountryModelViewSet, CityModelViewSet, AddressModelViewSet, HotelModelViewSet, \
-    RoomModelViewSet, RoomBookingAvailableModelViewSet, BookingModelViewSet
+    RoomModelViewSet
 
 router = routers.DefaultRouter()
 
@@ -12,6 +11,4 @@ router.register(r'cities', CityModelViewSet)
 router.register(r'addresses', AddressModelViewSet)
 router.register(r'hotels', HotelModelViewSet)
 router.register(r'rooms', RoomModelViewSet)
-router.register(r'rooms_booking_available', RoomBookingAvailableModelViewSet)
-router.register(r'bookings', BookingModelViewSet)
 

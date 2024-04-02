@@ -16,7 +16,7 @@ class User(AbstractUser, BaseModel):
     email = models.EmailField(unique=True)
 
     def __str__(self):
-        return self.username
+        return f"{self.id} {self.username} | {self.email}"
 
     class Meta:
         verbose_name = 'User'

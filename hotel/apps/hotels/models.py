@@ -1,9 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from apps.hotels.choices import BookingStatus
 from core.models import BaseModel
-from apps.users.models import User
 
 
 class Country(models.Model):
@@ -51,6 +49,9 @@ class Hotel(BaseModel):
         verbose_name = 'Hotel'
         verbose_name_plural = 'Hotels'
 
+    def __str__(self):
+        return f"{self.title}"
+
 
 class Room(BaseModel):
     number = models.PositiveIntegerField(null=False)
@@ -64,31 +65,5 @@ class Room(BaseModel):
         verbose_name = 'Room'
         verbose_name_plural = 'Rooms'
 
-
-class RoomBookingAvailable(BaseModel):
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name='available_bookings')
-
-    date_from = models.DateField()
-    date_end = models.DateField()
-
-    min_booking_time = models.PositiveIntegerField()
-    max_booking_time = models.PositiveIntegerField()
-
-    class Meta:
-        verbose_name = 'Room Booking Available'
-        verbose_name_plural = 'Rooms Booking Available'
-
-
-class Booking(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name="bookings")
-    guest_count = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], null=False)
-    booking_status = models.IntegerField(choices=BookingStatus.choices,
-                                         default=BookingStatus.IN_PROCESS, blank=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name="bookings")
-
-    date_from = models.DateField()
-    date_end = models.DateField()
-
-    class Meta:
-        verbose_name = 'Booking'
-        verbose_name_plural = 'Bookings'
+    def __str__(self):
+        return f"{self.number} | {self.hotel}"

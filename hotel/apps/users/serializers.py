@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User
+from ..bookings.serializers import BookingSerializer
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -19,6 +20,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    bookings = BookingSerializer(source='bookings.all', many=True, read_only=True)
+
     class Meta:
         model = User
         fields = ["username", "email", "id", "first_name", "last_name", "date_joined", "sex", "birthday",
@@ -35,6 +38,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    bookings = BookingSerializer(source='bookings.all', many=True, read_only=True)
+
     class Meta:
         model = User
         fields = ["username", "email", "id", "first_name", "last_name", "date_joined", "sex", "birthday",

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.hotels.models import City, Country, Address, Hotel, Room, RoomBookingAvailable, Booking
+from apps.hotels.models import City, Country, Address, Hotel, Room
 
 
 @admin.register(City)
@@ -28,11 +28,3 @@ class RoomAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(RoomBookingAvailable)
-class RoomBookingAvailableAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
-    pass

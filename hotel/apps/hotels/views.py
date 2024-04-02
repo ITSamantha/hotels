@@ -9,7 +9,7 @@ from apps.hotels.choices import BookingStatus
 from apps.hotels.filters import RoomFilter, HotelFilter
 from apps.hotels.models import Country, City, Address, Hotel, Room, RoomBookingAvailable, Booking
 from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSerializer, RoomSerializer, \
-    AddressSerializer, BookingSerializer
+    AddressSerializer, BookingSerializer, CreateBookingSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
 from core.mixins import PermissionPolicyMixin
@@ -110,8 +110,8 @@ class BookingModelViewSet(PermissionPolicyMixin, ModelViewSet):
 
     permission_classes_per_method = {
         'create': [IsAuthenticated],
-        'update': [IsAuthenticated | IsAdmin],
-        'partial_update': [IsAuthenticated | IsAdmin],
+        'update': [IsAdmin],
+        'partial_update': [IsAdmin],
         'destroy': [IsAuthenticated | IsAdmin]
     }
 
@@ -124,71 +124,63 @@ class BookingModelViewSet(PermissionPolicyMixin, ModelViewSet):
         return Response({'message': 'Successfully declined.'}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        auth = Auth()
-        auth.check_access_token(request)
+        serializer = CreateBookingSerializer(data=request.data)
+        if serializer.is_valid():
+            date_from = serializer.validated_data["date_from"]
+            date_end = serializer.validated_data["date_end"]
+            room = serializer.validated_data["room"]
+            guest_count = serializer.validated_data["guest_count"]
 
-        room_id = int(request.data.get('room'))
-        user_id = request.user
+            duration = (date_end - date_from)
 
-        datetime_from = datetime.datetime.strptime(request.data.get("datetime_from"),
-                                                   '%Y-%m-%d %H:%M:%S')
-        datetime_end = datetime.datetime.strptime(request.data.get("datetime_end"),
-                                                  '%Y-%m-%d %H:%M:%S')
-        """
-        difference: datetime.timedelta = datetime_end - datetime_from
+            available_bookings = RoomBookingAvailable.objects.filter(
+                room=room,
+                date_from__lte=date_from,
+                date_end__gte=date_end,
+                min_booking_time__lte=duration.days,
+                max_booking_time__gte=duration.days,
+            )
 
-        available_bookings = RoomBookingAvailable.objects.filter(room_id=room_id)
+            for booking in available_bookings:
 
-        for booking in available_bookings:
-            start_time = booking.datetime_from
-            end_time = booking.datetime_end
+                if guest_count > room.max_guest_amount:
+                    continue
 
-            min_booking_time = booking.min_booking_time
-            max_booking_time = booking.max_booking_time
+                if booking.date_end == date_end and booking.date_from == date_from:
+                    booking.delete()
+                    break
 
-            if min_booking_time <= difference <= max_booking_time:
-                if datetime_from < start_time:
-                    booking.datetime_end = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
-                    booking.save()
-        """
+                if booking.date_end > date_end:
+                    new_booking = RoomBookingAvailable.objects.create(
+                        room=room,
+                        date_from=date_end,
+                        date_end=booking.date_end,
+                        min_booking_time=1,
+                        max_booking_time=(booking.date_end - date_end).days
+                    )
+                    new_booking.save()
 
-    """
-    for booking in available_bookings:
-booking_datetime_from = datetime.strptime(booking.datetime_from, '%Y-%m-%d %H:%M:%S')
-booking_datetime_end = datetime.strptime(booking.datetime_end, '%Y-%m-%d %H:%M:%S')
+                if booking.date_from <= date_from:
+                    booking.date_end = date_from
+                    booking.min_booking_time = (booking.date_end - booking.date_from).days
+                    if booking.date_end == booking.date_from:
+                        booking.delete()
+                    else:
+                        booking.save()
+                    break
 
-if booking_datetime_from < datetime_from and booking_datetime_end > datetime_end:
-    # Если доступное бронирование полностью содержится в запрашиваемом интервале, разбиваем его на два
-    new_booking1 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
-    new_booking1.save()
-    
-    new_booking2 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
-    new_booking2.save()
-    
-    # Обновляем исходное доступное бронирование
-    booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
-    booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
-    booking.save()
-    
-elif booking_datetime_from < datetime_from:
-    # Создаем новое доступное бронирование до начала запрашиваемого интервала
-    new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
-    new_booking.save()
-    
-    # Обновляем исходное доступное бронирование
-    booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
-    booking.save()
-    
-elif booking_datetime_end > datetime_end:
-    # Создаем новое доступное бронирование после окончания запрашиваемого интервала
-    new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
-    new_booking.save()
-    
-    # Обновляем исходное доступное бронирование
-    booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
-    booking.save()
-    
-elif booking_datetime_from >= datetime_from and booking_datetime_end <= datetime_end:
-    # Удаляем доступное бронирование, так как оно полностью содержится в запрашиваемом интервале
-    booking.delete()
-    """
+            else:
+                return Response({'error': 'You can not book this room on this period.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            booking = Booking.objects.create(
+                user=request.user,
+                room=room,
+                date_from=date_from,
+                date_end=date_end,
+                guest_count=guest_count
+            )
+
+            return Response({'success': True, 'booking_id': booking.id})
+        else:
+            return Response({'success': False, 'message': 'Some problems with your data.'})

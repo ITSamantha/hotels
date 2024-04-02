@@ -1,11 +1,11 @@
 from django.utils import timezone
 
-from django.forms import DateTimeInput
-from django_filters import DateTimeFilter, NumberFilter, FilterSet, ModelChoiceFilter
+from django.forms import DateTimeInput, DateInput
+from django_filters import DateTimeFilter, NumberFilter, FilterSet, ModelChoiceFilter, DateFilter
 
 from apps.hotels.models import Room, Hotel, City, Country
 
-DATETIME_INPUT_FORMATS = ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S']
+DATETIME_INPUT_FORMATS = ['%Y-%m-%d', '%Y-%m-%d']
 
 
 class RoomFilter(FilterSet):
@@ -15,14 +15,14 @@ class RoomFilter(FilterSet):
     max_guest_amount__min = NumberFilter(field_name='max_guest_amount', lookup_expr='gte')
     max_guest_amount__max = NumberFilter(field_name='max_guest_amount', lookup_expr='lte')
 
-    datetime_from = DateTimeFilter(field_name='available_bookings__datetime_from', lookup_expr='lte',
-                                   input_formats=DATETIME_INPUT_FORMATS,
-                                   widget=DateTimeInput(attrs={'type': 'datetime-local',
-                                                               'min': timezone.now().strftime('%Y-%m-%dT%H:%M')}))
-    datetime_end = DateTimeFilter(field_name='available_bookings__datetime_end', lookup_expr='gte',
-                                  input_formats=DATETIME_INPUT_FORMATS,
-                                  widget=DateTimeInput(attrs={'type': 'datetime-local',
-                                                              'min': timezone.now().strftime('%Y-%m-%dT%H:%M')}))
+    datetime_from = DateFilter(field_name='available_bookings__datetime_from', lookup_expr='lte',
+                               input_formats=DATETIME_INPUT_FORMATS,
+                               widget=DateInput(attrs={'type': 'datetime-local',
+                                                       'min': timezone.now().strftime('%Y-%m-%d')}))
+    datetime_end = DateFilter(field_name='available_bookings__datetime_end', lookup_expr='gte',
+                              input_formats=DATETIME_INPUT_FORMATS,
+                              widget=DateInput(attrs={'type': 'datetime-local',
+                                                      'min': timezone.now().strftime('%Y-%m-%d')}))
 
     class Meta:
         model = Room

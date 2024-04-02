@@ -68,11 +68,11 @@ class Room(BaseModel):
 class RoomBookingAvailable(BaseModel):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name='available_bookings')
 
-    datetime_from = models.DateTimeField()
-    datetime_end = models.DateTimeField()
+    date_from = models.DateField()
+    date_end = models.DateField()
 
-    min_booking_time = models.DurationField()
-    max_booking_time = models.DurationField()
+    min_booking_time = models.PositiveIntegerField()
+    max_booking_time = models.PositiveIntegerField()
 
     class Meta:
         verbose_name = 'Room Booking Available'
@@ -86,8 +86,8 @@ class Booking(BaseModel):
                                          default=BookingStatus.IN_PROCESS, blank=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=False, related_name="bookings")
 
-    datetime_from = models.DateTimeField()
-    datetime_end = models.DateTimeField()
+    date_from = models.DateField()
+    date_end = models.DateField()
 
     class Meta:
         verbose_name = 'Booking'

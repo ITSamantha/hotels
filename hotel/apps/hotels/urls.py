@@ -1,4 +1,6 @@
+from django.urls import path
 from rest_framework import routers
+from rest_framework.authtoken import views
 
 from apps.hotels.views import CountryModelViewSet, CityModelViewSet, AddressModelViewSet, HotelModelViewSet, \
     RoomModelViewSet, RoomBookingAvailableModelViewSet, BookingModelViewSet
@@ -13,4 +15,3 @@ router.register(r'rooms', RoomModelViewSet)
 router.register(r'rooms_booking_available', RoomBookingAvailableModelViewSet)
 router.register(r'bookings', BookingModelViewSet)
 
-urlpatterns = router.urls

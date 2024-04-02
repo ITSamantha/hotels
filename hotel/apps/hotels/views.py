@@ -9,6 +9,8 @@ from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSeri
     AddressSerializer, RoomBookingAvailableSerializer, BookingSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
+from core.utils.auth import Auth
+
 
 class CountryModelViewSet(ModelViewSet):
     serializer_class = CountrySerializer
@@ -60,15 +62,17 @@ class BookingModelViewSet(ModelViewSet):
     search_fields = ["room__title", "room__number"]
 
     def create(self, request, *args, **kwargs):
+        auth = Auth()
+        auth.check_access_token(request)
 
         room_id = int(request.data.get('room'))
-        user_id = request.user.id
+        user_id = request.user
 
         datetime_from = datetime.datetime.strptime(request.data.get("datetime_from"),
                                                    '%Y-%m-%d %H:%M:%S')
         datetime_end = datetime.datetime.strptime(request.data.get("datetime_end"),
                                                   '%Y-%m-%d %H:%M:%S')
-
+        """
         difference: datetime.timedelta = datetime_end - datetime_from
 
         available_bookings = RoomBookingAvailable.objects.filter(room_id=room_id)
@@ -84,44 +88,45 @@ class BookingModelViewSet(ModelViewSet):
                 if datetime_from < start_time:
                     booking.datetime_end = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
                     booking.save()
+        """
 
-        """
-        for booking in available_bookings:
-    booking_datetime_from = datetime.strptime(booking.datetime_from, '%Y-%m-%d %H:%M:%S')
-    booking_datetime_end = datetime.strptime(booking.datetime_end, '%Y-%m-%d %H:%M:%S')
+    """
+    for booking in available_bookings:
+booking_datetime_from = datetime.strptime(booking.datetime_from, '%Y-%m-%d %H:%M:%S')
+booking_datetime_end = datetime.strptime(booking.datetime_end, '%Y-%m-%d %H:%M:%S')
+
+if booking_datetime_from < datetime_from and booking_datetime_end > datetime_end:
+    # Если доступное бронирование полностью содержится в запрашиваемом интервале, разбиваем его на два
+    new_booking1 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
+    new_booking1.save()
     
-    if booking_datetime_from < datetime_from and booking_datetime_end > datetime_end:
-        # Если доступное бронирование полностью содержится в запрашиваемом интервале, разбиваем его на два
-        new_booking1 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
-        new_booking1.save()
-        
-        new_booking2 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
-        new_booking2.save()
-        
-        # Обновляем исходное доступное бронирование
-        booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
-        booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
-        booking.save()
-        
-    elif booking_datetime_from < datetime_from:
-        # Создаем новое доступное бронирование до начала запрашиваемого интервала
-        new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
-        new_booking.save()
-        
-        # Обновляем исходное доступное бронирование
-        booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
-        booking.save()
-        
-    elif booking_datetime_end > datetime_end:
-        # Создаем новое доступное бронирование после окончания запрашиваемого интервала
-        new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
-        new_booking.save()
-        
-        # Обновляем исходное доступное бронирование
-        booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
-        booking.save()
-        
-    elif booking_datetime_from >= datetime_from and booking_datetime_end <= datetime_end:
-        # Удаляем доступное бронирование, так как оно полностью содержится в запрашиваемом интервале
-        booking.delete()
-        """
+    new_booking2 = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
+    new_booking2.save()
+    
+    # Обновляем исходное доступное бронирование
+    booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
+    booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
+    booking.save()
+    
+elif booking_datetime_from < datetime_from:
+    # Создаем новое доступное бронирование до начала запрашиваемого интервала
+    new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=booking_datetime_from.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=datetime_from.strftime('%Y-%m-%d %H:%M:%S'))
+    new_booking.save()
+    
+    # Обновляем исходное доступное бронирование
+    booking.datetime_from = datetime_from.strftime('%Y-%m-%d %H:%M:%S')
+    booking.save()
+    
+elif booking_datetime_end > datetime_end:
+    # Создаем новое доступное бронирование после окончания запрашиваемого интервала
+    new_booking = RoomBookingAvailable.objects.create(room_id=room_id, datetime_from=datetime_end.strftime('%Y-%m-%d %H:%M:%S'), datetime_end=booking_datetime_end.strftime('%Y-%m-%d %H:%M:%S'))
+    new_booking.save()
+    
+    # Обновляем исходное доступное бронирование
+    booking.datetime_end = datetime_end.strftime('%Y-%m-%d %H:%M:%S')
+    booking.save()
+    
+elif booking_datetime_from >= datetime_from and booking_datetime_end <= datetime_end:
+    # Удаляем доступное бронирование, так как оно полностью содержится в запрашиваемом интервале
+    booking.delete()
+    """

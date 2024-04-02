@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-import apps.hotels.urls
+import apps.hotels.urls, apps.users.urls
 
 router = routers.DefaultRouter()
 

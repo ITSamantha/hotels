@@ -59,7 +59,7 @@ class Room(BaseModel):
     price = models.FloatField(validators=[MinValueValidator(0)], null=False)
     max_guest_amount = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], null=False)
 
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, null=False)
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, null=False, related_name="rooms")
 
     class Meta:
         verbose_name = 'Room'

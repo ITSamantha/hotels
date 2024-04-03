@@ -5,7 +5,7 @@ from django_filters import DateTimeFilter, NumberFilter, FilterSet, ModelChoiceF
 
 from apps.hotels.models import Room, Hotel, City, Country
 
-DATETIME_INPUT_FORMATS = ['%Y-%m-%d', '%Y-%m-%d']
+DATETIME_INPUT_FORMATS = ['%Y-%m-%d']
 
 
 class RoomFilter(FilterSet):
@@ -15,14 +15,14 @@ class RoomFilter(FilterSet):
     max_guest_amount__min = NumberFilter(field_name='max_guest_amount', lookup_expr='gte')
     max_guest_amount__max = NumberFilter(field_name='max_guest_amount', lookup_expr='lte')
 
-    date_from = DateFilter(field_name='available_bookings__date_from', lookup_expr='lte',
-                               input_formats=DATETIME_INPUT_FORMATS,
-                               widget=DateInput(attrs={'type': 'date',
-                                                       'min': timezone.now().strftime('%Y-%m-%d')}))
-    date_end = DateFilter(field_name='available_bookings__date_end', lookup_expr='gte',
-                              input_formats=DATETIME_INPUT_FORMATS,
-                              widget=DateInput(attrs={'type': 'date',
-                                                      'min': timezone.now().strftime('%Y-%m-%d')}))
+    date_from = DateFilter(field_name='available_bookings__date_from', lookup_expr='gte',
+                           input_formats=DATETIME_INPUT_FORMATS,
+                           widget=DateInput(attrs={'type': 'date',
+                                                   'min': timezone.now().strftime('%Y-%m-%d')}))
+    date_end = DateFilter(field_name='available_bookings__date_end', lookup_expr='lte',
+                          input_formats=DATETIME_INPUT_FORMATS,
+                          widget=DateInput(attrs={'type': 'date',
+                                                  'min': timezone.now().strftime('%Y-%m-%d')}))
 
     class Meta:
         model = Room

@@ -11,7 +11,13 @@ class RoomBookingAvailableAdmin(admin.ModelAdmin):
 class BookingInline(admin.TabularInline):
     model = Booking
     extra = 0
+    sortable_by = ["date_end"]
 
+
+class RoomBookingAvailableInline(admin.TabularInline):
+    model = RoomBookingAvailable
+    extra = 0
+    sortable_by = ["date_from"]
 
 
 @admin.register(Booking)

@@ -1,6 +1,4 @@
-from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from apps.hotels.filters import RoomFilter, HotelFilter
@@ -10,7 +8,7 @@ from apps.hotels.serializers import CountrySerializer, CitySerializer, HotelSeri
 from django_filters.rest_framework import DjangoFilterBackend
 
 from core.mixins import PermissionPolicyMixin
-from core.permissions import IsAdmin, IsAuthenticated
+from core.permissions import IsAdmin
 
 
 class CountryModelViewSet(PermissionPolicyMixin, ModelViewSet):
@@ -79,4 +77,3 @@ class RoomModelViewSet(PermissionPolicyMixin, ModelViewSet):
         'partial_update': [IsAdmin],
         'destroy': [IsAdmin]
     }
-

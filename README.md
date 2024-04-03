@@ -52,13 +52,13 @@
      
      ```
      git clone https://github.com/ITSamantha/hotels
+     cd hotels
      ```
      
   3. Выполнить build в директории приложения с помощью следующей команды:
 
      ```
      docker compose build --no-cache
-     cd hotels
      ```
      
   3. Для запуска приложения необходимо выполнить следующую команду:

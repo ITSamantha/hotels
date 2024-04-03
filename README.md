@@ -119,10 +119,9 @@
        username: admin
        password: admin
 
-     Для пользовтаеля:
+     Для пользователя:
        username: pinguin
        password: pinguin
-       
      ```
      
      
